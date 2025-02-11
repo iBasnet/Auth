@@ -1,8 +1,9 @@
 
 export default function page() {
+
   return (
-    <main>
-      <h1 className="min-h-screen flex items-center justify-center text-5xl">
+    <main className="min-h-screen flex flex-col gap-8 items-center justify-center">
+      <h1 className="text-3xl">
         Authentication🪬
       </h1>
     </main>

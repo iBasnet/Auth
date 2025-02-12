@@ -1,3 +1,5 @@
+"use server";
+
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
@@ -8,6 +10,6 @@ const UserSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const User = mongoose.models.User || mongoose.model("User", UserSchema);
+const User = mongoose.models?.User || mongoose.model("User", UserSchema);
 
 export { User };

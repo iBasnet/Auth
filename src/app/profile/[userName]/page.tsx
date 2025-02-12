@@ -11,15 +11,15 @@ export default async function ProfilePage() {
 
     const userId = await verifyAuthToken();
 
-    if (!userId) {
-        redirect("/login");
-    }
+    // if (!userId) {
+    //     redirect("/login");
+    // }
 
     const user = await User.findOne({ _id: userId });
 
-    if (!user) {
-        redirect("/login");
-    }
+    // if (!user) {
+    //     redirect("/login");
+    // }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">

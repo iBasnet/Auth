@@ -1,29 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function middleware() {
 
-    try {
-        const cookie = await cookies();
-        const username = cookie.get("username")?.value;
+    const cookie = await cookies();
+    const username = cookie.get("username")?.value;
 
-        if (!username) {
-            return NextResponse.redirect(new URL("/login", req.nextUrl));
-        }
-
-        if (req.nextUrl.pathname === "/profile") {
-            return NextResponse.redirect(new URL(`/profile/${username}`, req.nextUrl));
-        }
-
-        return NextResponse.next();
-
+    if (username === "pratik") {
+        return NextResponse.redirect("https://linktr.ee/basnet");
     }
-    catch (error: any) {
-        return NextResponse.redirect(new URL("/login", req.nextUrl));
-    }
-}
 
-export const config = {
-    matcher: "/profile",
+    return NextResponse.next();
 }

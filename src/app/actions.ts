@@ -51,7 +51,7 @@ export const loginUser = async (prevState: any, formData: FormData) => {
         await setUsernameCookie(user.username);
 
         return {
-            redirectUrl: `/profile/${username}`
+            redirectUrl: `/dashboard`
         }
 
     }

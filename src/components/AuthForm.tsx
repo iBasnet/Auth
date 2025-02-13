@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useFormStatus } from "react-dom";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner"
+import { redirect } from "next/navigation";
 
 type AuthFormProps = {
     title: string;
@@ -37,9 +38,11 @@ export function AuthForm({
 
     const [state, formAction] = useActionState(action, undefined);
 
-    if (state?.redirectUrl) {
-        window.location.href = `http://localhost:3000${state.redirectUrl}`;
-    }
+    useEffect(() => {
+        if (state?.redirectUrl) {
+            redirect(state.redirectUrl);
+        }
+    }, [state]);
 
     useEffect(() => {
         if (state?.error) {

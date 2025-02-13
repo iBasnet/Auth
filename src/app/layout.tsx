@@ -40,9 +40,9 @@ export default function RootLayout({
         // disableTransitionOnChange
         >
           <header>
-            <div className="absolute top-0 right-0 p-4">
+            {/* <div className="absolute top-0 right-0 p-4">
               <ModeToggle />
-            </div>
+            </div> */}
           </header>
           {children}
           <Toaster />

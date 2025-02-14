@@ -1,5 +1,5 @@
 import { AuthForm } from "./AuthForm";
-import { registerUser } from "@/app/actions"; // Define this action
+import { registerUser } from "@/actions/actions";
 
 export function RegisterForm() {
     return (
@@ -11,5 +11,5 @@ export function RegisterForm() {
             redirectUrl="/register"
             footerLink={{ text: "Already have an account?", action: "Login", href: "/login" }}
         />
-    );
+    )
 }

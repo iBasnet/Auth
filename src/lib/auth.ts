@@ -7,25 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const generateToken = async (userId: string) => {
     return jwt.sign({ userId }, JWT_SECRET);
-};
-
-export const setAuthCookie = async (token: string) => {
-
-    const cookie = await cookies();
-    cookie.set("auth", token, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-    });
-};
-
-export const setUsernameCookie = async (username: string) => {
-
-    const cookie = await cookies();
-    cookie.set("username", username, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-    });
-};
+}
 
 export const verifyAuthToken = async () => {
 
@@ -41,4 +23,29 @@ export const verifyAuthToken = async () => {
     catch (error) {
         console.error("Error verifying token", error);
     }
-};
+}
+
+export const setAuthCookie = async (token: string) => {
+
+    const cookie = await cookies();
+    cookie.set("auth", token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+}
+
+export const setUsernameCookie = async (username: string) => {
+
+    const cookie = await cookies();
+    cookie.set("username", username, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+    })
+}
+
+export const deleteCookies = async () => {
+
+    const cookie = await cookies();
+    cookie.delete("auth");
+    cookie.delete("username");
+}

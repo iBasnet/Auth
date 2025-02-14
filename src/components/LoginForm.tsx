@@ -1,5 +1,5 @@
 import { AuthForm } from "./AuthForm";
-import { loginUser } from "@/app/actions";
+import { loginUser } from "@/actions/actions";
 
 export function LoginForm() {
     return (
@@ -13,5 +13,5 @@ export function LoginForm() {
             footerLink={{ text: "Don't have an account?", action: "Sign Up", href: "/register" }}
 
         />
-    );
+    )
 }

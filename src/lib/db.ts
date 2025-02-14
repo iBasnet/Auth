@@ -12,7 +12,7 @@ export async function connectDB() {
         await mongoose.connect(MONGO_URI);
         console.log("Connected to MongoDB 🔰");
     }
-    catch (error) {
-        console.error("Error connecting to MongoDB", error);
+    catch (err: any) {
+        console.error("Error connecting to MongoDB", err.message);
     }
 }

@@ -3,17 +3,21 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
+
     const cookie = await cookies();
     const username = cookie.get("username")?.value;
     const pathname = req.nextUrl.pathname;
 
+    const protectedRoutes = ["/dashboard", "/logout"];
+    const authRoutes = ["/login", "/register"];
+
     if (!username) {
-        if (pathname === "/dashboard" || pathname === "/profile/settings") {
+        if (protectedRoutes.includes(pathname)) {
             return NextResponse.redirect(new URL("/login", req.nextUrl));
         }
     }
 
-    if (username && (pathname === "/login" || pathname === "/register")) {
+    if (username && (authRoutes.includes(pathname))) {
         return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
     }
 

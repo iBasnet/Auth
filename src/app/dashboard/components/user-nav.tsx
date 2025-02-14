@@ -22,11 +22,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { handleLogout } from "@/app/logout/page";
-import { getUser } from "@/app/user/actions";
+import { getUser, logoutUser } from "@/actions/actions";
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
 
+    const router = useRouter();
     const { setTheme } = useTheme();
     const [user, setUser] = useState<{ username: string }>();
 
@@ -39,6 +40,14 @@ export function UserNav() {
     useEffect(() => {
         fetchUser();
     }, []);
+
+    const handleLogout = async () => {
+        const success = await logoutUser();
+        if (success) {
+            router.push("/login");
+        }
+    }
+
 
     return (
         <DropdownMenu>
@@ -63,7 +72,7 @@ export function UserNav() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(`/profile/${user?.username}`)}>
                         Profile
                         <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>
@@ -96,7 +105,9 @@ export function UserNav() {
                     </DropdownMenuSub>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleLogout()}>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={handleLogout}>
                     Log out
                     <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                 </DropdownMenuItem>

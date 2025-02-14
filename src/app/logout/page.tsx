@@ -12,10 +12,23 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { logout } from "./actions";
-import { redirect } from "next/navigation";
+import { logoutUser } from "@/actions/actions";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function page() {
+
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+        const success = await logoutUser();
+        if (success) {
+            router.push("/login");
+        }
+        setIsLoggingOut(false);
+    }
 
     return (
         <main className="min-h-screen flex items-center justify-center">
@@ -34,15 +47,12 @@ export default function page() {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleLogout}
-                        >Continue</AlertDialogAction>
+                        >
+                            {isLoggingOut ? "Pending..." : "Continue"}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </main>
     )
-}
-
-export async function handleLogout() {
-    await logout();
-    redirect("/login");
 }

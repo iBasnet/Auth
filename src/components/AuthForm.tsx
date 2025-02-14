@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useFormStatus } from "react-dom";
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner"
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type AuthFormProps = {
     title: string;
@@ -23,7 +23,7 @@ type AuthFormProps = {
     action: (prevState: any, formData: FormData) => Promise<any>;
     redirectUrl?: string;
     extraLink?: { text: string; href: string };
-    footerLink?: { text: string; action: string, href: string };
+    footerLink: { text: string; action: string, href: string };
 }
 
 export function AuthForm({
@@ -37,12 +37,13 @@ export function AuthForm({
 }: AuthFormProps) {
 
     const [state, formAction] = useActionState(action, undefined);
+    const router = useRouter();
 
     useEffect(() => {
         if (state?.redirectUrl) {
-            redirect(state.redirectUrl);
+            router.push(state.redirectUrl);
         }
-    }, [state]);
+    }, [state])
 
     useEffect(() => {
         if (state?.error) {
@@ -52,9 +53,9 @@ export function AuthForm({
                     label: "Roger",
                     onClick: () => null,
                 },
-            });
+            })
         }
-    }, [state]);
+    }, [state])
 
     return (
         <div className={cn("flex flex-col gap-6")}>
@@ -72,7 +73,8 @@ export function AuthForm({
                                     name="username"
                                     type="text"
                                     placeholder="username"
-                                    required
+                                    defaultValue={state?.values?.username || ""}
+                                // required
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -87,7 +89,9 @@ export function AuthForm({
                                         </a>
                                     )}
                                 </div>
-                                <Input name="password" type="password" required />
+                                <Input name="password" type="password"
+                                // required
+                                />
                             </div>
 
                             {
@@ -118,7 +122,7 @@ export function AuthForm({
                 </CardContent>
             </Card>
         </div>
-    );
+    )
 }
 
 function SubmitButton({ text }: { text: string }) {
@@ -129,7 +133,6 @@ function SubmitButton({ text }: { text: string }) {
             type="submit"
             className="w-full"
             disabled={pending}
-        // onClick={() => validateUser()}
         >
             {pending ? (
                 <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -140,5 +143,5 @@ function SubmitButton({ text }: { text: string }) {
                 <span>{text}</span>
             )}
         </ Button>
-    );
+    )
 }

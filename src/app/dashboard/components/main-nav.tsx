@@ -12,28 +12,34 @@ export function MainNav({
             {...props}
         >
             <Link
-                href="/examples/dashboard"
+                href="/dashboard/today"
                 className="text-sm font-medium transition-colors hover:text-primary"
             >
-                Overview
+                Today
             </Link>
             <Link
-                href="/examples/dashboard"
+                href="/dashboard/upcoming"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-                Customers
+                Upcoming
             </Link>
             <Link
-                href="/examples/dashboard"
+                href="/dashboard/calendar"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-                Products
+                Calendar
             </Link>
             <Link
-                href="/examples/dashboard"
+                href="/dashboard/analytics"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-                Settings
+                Analytics
+            </Link>
+            <Link
+                href="/dashboard/notes"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+                Notes
             </Link>
         </nav>
     )

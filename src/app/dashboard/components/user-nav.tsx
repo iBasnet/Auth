@@ -74,11 +74,7 @@ export function UserNav() {
                 <DropdownMenuGroup>
                     <DropdownMenuItem onClick={() => router.push(`/profile/${user?.username}`)}>
                         Profile
-                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        Billing
-                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                        <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         Settings
@@ -109,7 +105,7 @@ export function UserNav() {
                     className="cursor-pointer"
                     onClick={handleLogout}>
                     Log out
-                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                    <DropdownMenuShortcut>⌘X</DropdownMenuShortcut>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

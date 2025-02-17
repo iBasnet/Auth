@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -17,11 +17,20 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { getUser, updateUser } from "@/actions/actions"
 import { useRouter } from "next/navigation";
 
 const userSchema = z.object({
-    avatar: z.string().url("Invalid avatar URL"),
     name: z.string().min(2, "Name must be at least 2 characters"),
     username: z.string().min(3, "Username must be at least 3 characters"),
     jobTitle: z.string().min(2, "Job title must be at least 2 characters"),
@@ -30,7 +39,8 @@ const userSchema = z.object({
     bio: z.string().max(500, "Bio must not exceed 500 characters"),
 })
 
-type UserT = z.infer<typeof userSchema>
+type UserTZ = z.infer<typeof userSchema>
+type UserT = UserTZ & { avatar: string }
 
 export type { UserT };
 
@@ -38,11 +48,12 @@ export default function ProfileSettings() {
 
     const [user, setUser] = useState<UserT | null>(null)
     const router = useRouter();
+    const [image, setImage] = useState<string>(""); // Image preview
+    const [avatar, setAvatar] = useState<string>(""); // Avatar image
 
-    const form = useForm<UserT>({
+    const form = useForm<UserTZ>({
         resolver: zodResolver(userSchema),
         defaultValues: {
-            avatar: "",
             name: "",
             username: "",
             jobTitle: "",
@@ -52,32 +63,22 @@ export default function ProfileSettings() {
         },
     })
 
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const onSubmit = async (data: UserTZ) => {
 
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-
-        reader.onload = () => {
-            if (typeof reader.result === "string") {
-                form.setValue("avatar", reader.result)
-            }
+        const payload = {
+            ...data,
+            avatar: avatar,
         }
-    }
 
-    const onSubmit = async (data: UserT) => {
-        console.log("Updated user data:", data)
+        // console.log("Updated user data:", data);
 
-        const success = await updateUser(data);
+        const success = await updateUser(payload);
 
         if (success) {
-            alert("Profile updated successfully!")
+            alert("Profile updated successfully!");
         }
         else {
-            alert("An error occurred. Please try again.")
+            alert("An error occurred. Please try again.");
         }
     }
 
@@ -85,13 +86,41 @@ export default function ProfileSettings() {
         const user = await getUser() as UserT;
         setUser(user);
         if (user) {
-            form.reset(user)
+            form.reset(user);
+            setAvatar(user.avatar || "");
         }
     }
 
     useEffect(() => {
-        fetchUser()
-    }, [])
+        fetchUser();
+    }, []);
+
+    // leave confirmation for browser navigation
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (form.formState.isDirty) {
+                e.preventDefault();
+                e.returnValue = "Are you sure you want to leave? Your changes may not be saved.";
+                return "Are you sure you want to leave? Your changes may not be saved.";
+            }
+        }
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        }
+    }, [form.formState.isDirty]);
+
+    // leave confirmation for react router navigation
+    const handleNavigate = async (url: string) => {
+        if (form.formState.isDirty) {
+            const confirmNavigation = window.confirm("You have unsaved changes. Are you sure you want to leave?");
+            if (!confirmNavigation) {
+                return;
+            }
+        }
+        router.push(url);
+    }
 
     if (!user) {
         return (
@@ -103,61 +132,112 @@ export default function ProfileSettings() {
         )
     }
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImage(reader.result as string);
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    const handleAvatarUpload = () => {
+        if (image) {
+            setAvatar(image);
+            setImage("");
+        }
+    }
+
+    const handleAvatarDelete = () => {
+        setAvatar("");
+    }
+
     return (
         <div className="container mx-auto py-10">
+
             <Button
-                onClick={() => router.push("/profile")}
+                onClick={() => handleNavigate("/profile")}
                 className="absolute top-4 right-4 -space-x-1"
             >
                 <span>Profile</span>
                 <span><UserRound /></span>
             </Button>
+
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">Profile Settings</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="flex items-center space-x-4">
-                                <Avatar className="w-24 h-24">
-                                    <AvatarImage src={form.watch("avatar") || ""} alt={form.watch("name") || "User Avatar"} />
-                                    <AvatarFallback>{form.watch("name") ? form.watch("name").charAt(0) : "U"}</AvatarFallback>
-                                </Avatar>
-                                <div className="mt-8 space-x-4 flex">
+
+                    <div className="flex items-center space-x-4">
+                        <Avatar className="w-24 h-24">
+                            <AvatarImage src={avatar || ""} alt={form.watch("name") || "User Avatar"}
+                                className="object-cover object-center"
+                            />
+                            <AvatarFallback>{form.watch("name") ? form.watch("name").charAt(0) : "U"}</AvatarFallback>
+                        </Avatar>
+                        <div className="mt-8 space-x-4 flex">
+                            <Dialog onOpenChange={(open) => !open && setImage("")}>
+                                <DialogTrigger asChild>
                                     <Button
                                         variant="outline"
                                         type="button"
-                                        onClick={() => fileInputRef.current?.click()}
                                     >
                                         Upload new avatar
                                     </Button>
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="hover:bg-rose-600 opacity-90"
-                                                    onClick={() => form.setValue("avatar", "")}
-                                                >
-                                                    <Trash2 />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>Remove</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                    <Input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleAvatarUpload}
-                                    />
-                                </div>
-                            </div>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                    <DialogHeader>
+                                        <DialogTitle>Upload avatar</DialogTitle>
+                                        <DialogDescription>
+                                            Please choose a 2x2 image to use as your avatar.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        {image && <img src={image} alt="Preview" className="w-44 h-44 object-cover rounded-md mx-auto" />}
+                                        <Input id="picture" type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" />
+                                    </div>
+                                    <DialogFooter>
+                                        <DialogClose asChild>
+                                            <Button type="button" variant="ghost"
+                                                onClick={() => setImage("")}
+                                            >
+                                                Close
+                                            </Button>
+                                        </DialogClose>
+                                        <DialogClose asChild>
+                                            <Button type="submit"
+                                                onClick={handleAvatarUpload}
+                                            >Confirm</Button>
+                                        </DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="hover:bg-rose-600 opacity-90"
+                                            onClick={handleAvatarDelete}
+                                        >
+                                            <Trash2 />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Remove</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                    </div>
+
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                             <FormField
                                 control={form.control}
@@ -251,6 +331,6 @@ export default function ProfileSettings() {
                     </Form>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }

@@ -30,6 +30,7 @@ type UserNavT = {
     name: string,
     username: string,
     email: string
+    avatar: string
 }
 
 export function UserNav() {
@@ -41,11 +42,13 @@ export function UserNav() {
     const fetchUser = async () => {
 
         const fetchedUser = await getUser() as UserNavT;
-        setUser({
-            name: fetchedUser.name,
-            username: fetchedUser.username,
-            email: fetchedUser.email
-        });
+
+        if (!fetchedUser.name || !fetchedUser.email) {
+            router.push("/profile/settings");
+        } else {
+            const { name, username, email, avatar } = fetchedUser;
+            setUser({ name, username, email, avatar });
+        }
     }
 
     useEffect(() => {
@@ -74,7 +77,9 @@ export function UserNav() {
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src="/avatars/01.png" alt={`@${TitleCase(user.name)}`} />
+                        <AvatarImage src={user.avatar} alt={`@${TitleCase(user.name)}`}
+                            className="object-cover object-center"
+                        />
                         <AvatarFallback>{GetInitials(user.name)}</AvatarFallback>
                     </Avatar>
                 </Button>

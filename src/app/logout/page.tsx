@@ -23,7 +23,8 @@ export default function page() {
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
-        const success = await logoutUser();
+        const success = await logoutUser()
+
         if (success) {
             router.push("/login");
         }

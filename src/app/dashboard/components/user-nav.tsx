@@ -24,17 +24,28 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { getUser, logoutUser } from "@/actions/actions";
 import { useRouter } from "next/navigation";
+import { GetInitials, TitleCase } from "@/lib/utils";
+
+type UserNavT = {
+    name: string,
+    username: string,
+    email: string
+}
 
 export function UserNav() {
 
     const router = useRouter();
     const { setTheme } = useTheme();
-    const [user, setUser] = useState<{ username: string }>();
+    const [user, setUser] = useState<UserNavT>();
 
     const fetchUser = async () => {
 
-        const data = await getUser() as { username: string };
-        setUser(data);
+        const fetchedUser = await getUser() as UserNavT;
+        setUser({
+            name: fetchedUser.name,
+            username: fetchedUser.username,
+            email: fetchedUser.email
+        });
     }
 
     useEffect(() => {
@@ -48,35 +59,42 @@ export function UserNav() {
         }
     }
 
+    if (!user) {
+        return (
+            <main className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
+                    <span className="sr-only">Loading...</span>
+                </div>
+            </main>
+        )
+    }
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src="/avatars/01.png" alt={`@${user?.username}`} />
-                        <AvatarFallback>PB</AvatarFallback>
+                        <AvatarImage src="/avatars/01.png" alt={`@${TitleCase(user.name)}`} />
+                        <AvatarFallback>{GetInitials(user.name)}</AvatarFallback>
                     </Avatar>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        {/* <p className="text-sm font-medium leading-none">{user?.username}</p> */}
-                        <p className="text-sm font-medium leading-none">Patrick Bateman</p>
+                        <p className="text-sm font-medium leading-none">{TitleCase(user.name)}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                            {/* {user?.username}@boss.com */}
-                            patrick.bateman@nyc.vip
+                            {user.email}
                         </p>
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => router.push(`/profile/${user?.username}`)}>
+                    <DropdownMenuItem onClick={() => router.push(`/profile/${user.username}`)}>
                         Profile
                         <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push(`/profile/settings`)}>
                         Settings
                         <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                     </DropdownMenuItem>

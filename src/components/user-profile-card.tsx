@@ -8,22 +8,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import type { UserT } from "@/app/profile/settings/page"
+import type { UserDateT } from "@/app/profile/[userName]/page"
 
-interface UserProfileCardProps {
-    name: string
-    username: string
-    avatar: string
-    jobTitle: string
-    email: string
-    location: string
-    bio: string
-    joined: string
-    logged: string
-}
-
-export function UserProfileCard({ user }: { user: UserProfileCardProps }) {
+export function UserProfileCard({ user, userDate }: { user: UserT, userDate: UserDateT }) {
     return (
-        <Card className="w-[350px]">
+        <Card className="w-[350px] scale-110">
             <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                 <Avatar className="h-14 w-14">
                     <AvatarImage src={user.avatar} alt={user.name}
@@ -63,7 +53,7 @@ export function UserProfileCard({ user }: { user: UserProfileCardProps }) {
                             </Tooltip>
                         </TooltipProvider>
                         {/* <span className="text-sm text-muted-foreground">Joined on</span> */}
-                        <span className="text-sm font-medium">{user.joined}</span>
+                        <span className="text-sm font-medium">{userDate.joined}</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <TooltipProvider>
@@ -77,7 +67,7 @@ export function UserProfileCard({ user }: { user: UserProfileCardProps }) {
                             </Tooltip>
                         </TooltipProvider>
                         {/* <span className="text-sm text-muted-foreground">Last seen</span> */}
-                        <span className="text-sm font-medium">{user.logged}</span>
+                        <span className="text-sm font-medium">{userDate.logged}</span>
                     </div>
                 </div>
             </CardContent>

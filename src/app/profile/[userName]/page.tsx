@@ -1,23 +1,59 @@
+"use client";
+
+import { Button } from "@/components/ui/button"
 import { UserProfileCard } from "@/components/user-profile-card"
-import { Josefin_Slab } from "next/font/google"
+import { Box } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { UserT } from "../settings/page";
+import { useEffect, useState } from "react";
+import { getUser } from "@/actions/actions";
+import { getUserDate } from "@/actions/actions";
+
+type UserDateT = {
+    joined: string;
+    logged: string;
+}
+
+export type { UserDateT };
 
 export default function ProfilePage() {
 
-    const user = {
-        name: "Patrick Bateman",
-        username: "bateman",
-        avatar: "https://d2ycltig8jwwee.cloudfront.net/features/515/fullwidth.8b8fe027.jpg",
-        jobTitle: "Vice President",
-        email: "bateman@nyc.vip",
-        location: "New York, NY",
-        bio: "I have all the characteristics of a human being: blood, flesh, skin, hair; but not a single, clear, identifiable emotion, except for greed and disgust.",
-        joined: "Apr 14, 2000",
-        logged: "Jan 20, 2025"
+    const router = useRouter();
+    const [user, setUser] = useState<UserT>();
+    const [userDate, setUserDate] = useState<UserDateT>();
+
+    const fetchUser = async () => {
+        const fetchedUser = await getUser() as UserT;
+        setUser(fetchedUser);
+        const fetchedUserDate = await getUserDate() as UserDateT;
+        setUserDate(fetchedUserDate);
+    }
+
+    useEffect(() => {
+        fetchUser();
+    }, []);
+
+
+    if (!user && !userDate) {
+        return (
+            <main className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
+                    <span className="sr-only">Loading...</span>
+                </div>
+            </main>
+        )
     }
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-background">
-            <UserProfileCard user={user} />
+            <Button
+                onClick={() => router.push("/dashboard")}
+                className="absolute top-4 right-4 -space-x-1"
+            >
+                <span>Dashboard</span>
+                <span><Box /></span>
+            </Button>
+            {user && userDate && <UserProfileCard user={user} userDate={userDate} />}
         </div>
     )
 }

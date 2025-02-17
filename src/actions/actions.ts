@@ -5,9 +5,8 @@ import { connectDB } from "@/lib/db";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { deleteCookies, generateToken, setAuthCookie, setUsernameCookie, verifyAuthToken } from "@/lib/auth";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { redirect } from "next/dist/server/api-utils";
+import type { UserT } from "@/app/profile/settings/page";
+import { format } from "date-fns";
 
 const loginSchema = z.object({
     username: z
@@ -20,6 +19,50 @@ const loginSchema = z.object({
         .min(6, { message: "Password must be at least 6 characters long" })
         .max(32, { message: "Password must be at most 32 characters long" }),
 });
+
+export const registerUser = async (prevState: any, formData: FormData) => {
+
+    await connectDB();
+
+    try {
+        const result = loginSchema.safeParse({
+            username: formData.get("username") as string,
+            password: formData.get("password") as string,
+        })
+
+        if (!result.success) {
+            console.log(result)
+            return {
+                error: result.error.issues[0].message
+            }
+        }
+
+        const { username, password } = result.data;
+
+        const existingUser = await User.findOne({ username });
+
+        if (existingUser) {
+            return {
+                error: "User already exists. Try a different username."
+            }
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await User.create({ username, password: hashedPassword });
+
+        if (user) {
+            return {
+                redirectUrl: `/login`
+            }
+        }
+    }
+    catch (err: any) {
+        return {
+            error: err.message || "An unexpected error occurred"
+        }
+    }
+}
 
 export const loginUser = async (prevState: any, formData: FormData) => {
 
@@ -72,47 +115,18 @@ export const loginUser = async (prevState: any, formData: FormData) => {
     }
 }
 
-export const registerUser = async (prevState: any, formData: FormData) => {
+export const logoutUser = async () => {
 
     await connectDB();
 
     try {
-        const result = loginSchema.safeParse({
-            username: formData.get("username") as string,
-            password: formData.get("password") as string,
-        })
+        await deleteCookies();
+        return true;
 
-        if (!result.success) {
-            console.log(result)
-            return {
-                error: result.error.issues[0].message
-            }
-        }
-
-        const { username, password } = result.data;
-
-        const existingUser = await User.findOne({ username });
-
-        if (existingUser) {
-            return {
-                error: "User already exists. Try a different username."
-            }
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({ username, password: hashedPassword });
-
-        if (user) {
-            return {
-                redirectUrl: `/login`
-            }
-        }
     }
     catch (err: any) {
-        return {
-            error: err.message || "An unexpected error occurred"
-        }
+        console.error(err.message || "An unexpected error occurred");
+        return false;
     }
 }
 
@@ -126,9 +140,9 @@ export const getUser = async () => {
 
         const user = await User.findOne({ _id: userId });
 
-        const { username } = user;
+        const { avatar, name, username, jobTitle, email, location, bio } = user;
 
-        const userPublicData = { username };
+        const userPublicData = { avatar, name, username, jobTitle, email, location, bio };
 
         return userPublicData;
     }
@@ -137,17 +151,46 @@ export const getUser = async () => {
     }
 }
 
-export const logoutUser = async () => {
+export const updateUser = async (payload: UserT) => {
 
     await connectDB();
 
     try {
-        await deleteCookies();
-        return true;
+        const userId = await verifyAuthToken();
 
+        await User.updateOne(
+            { _id: userId },
+            { $set: { ...payload } }
+        )
+
+        return true;
     }
     catch (err: any) {
-        console.error(err.message || "An unexpected error occurred");
-        return false;
+        console.log(err.message || "An unexpected error occurred");
+        return false
+    }
+}
+
+export const getUserDate = async () => {
+
+    await connectDB();
+
+    try {
+
+        const userId = await verifyAuthToken();
+
+        const user = await User.findOne({ _id: userId });
+
+        const { createdAt, updatedAt } = user;
+
+        const userDate = {
+            joined: format(new Date(createdAt), "MMM d, yyyy"),
+            logged: format(new Date(updatedAt), "MMM d, yyyy")
+        };
+
+        return userDate;
+    }
+    catch (err: any) {
+        return { error: err.message || "An unexpected error occurred" };
     }
 }

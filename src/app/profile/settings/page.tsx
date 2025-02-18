@@ -70,6 +70,7 @@ export default function ProfileSettings() {
             avatar: avatar,
         }
 
+        // test logs
         // console.log("Updated user data:", data);
 
         const success = await updateUser(payload);

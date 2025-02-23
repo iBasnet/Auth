@@ -1,5 +1,5 @@
 import { AuthForm } from "./AuthForm";
-import { registerUser } from "@/actions/actions";
+import { registerUser } from "@/lib/actions";
 
 export function RegisterForm() {
     return (

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/tooltip"
 import type { UserT } from "@/app/profile/settings/page"
 import type { UserDateT } from "@/app/profile/[userName]/page"
+import { GetInitials } from "@/lib/utils"
 
 export function UserProfileCard({ user, userDate }: { user: UserT, userDate: UserDateT }) {
     return (
@@ -19,7 +20,7 @@ export function UserProfileCard({ user, userDate }: { user: UserT, userDate: Use
                     <AvatarImage src={user.avatar} alt={user.name}
                         className="h-full w-full object-cover object-center"
                     />
-                    <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>{GetInitials(user.name)}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
                     <p className="text-lg font-semibold">{user.name}</p>

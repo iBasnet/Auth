@@ -27,8 +27,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { getUser, updateUser } from "@/actions/actions"
+import { getUser, updateUser } from "@/lib/actions"
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { GetInitials } from "@/lib/utils";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const userSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -48,8 +51,9 @@ export default function ProfileSettings() {
 
     const [user, setUser] = useState<UserT | null>(null)
     const router = useRouter();
-    const [image, setImage] = useState<string>(""); // Image preview
+    const [preview, setPreview] = useState<string>(""); // Image preview
     const [avatar, setAvatar] = useState<string>(""); // Avatar image
+    const [isCloudinaryProcessing, setIsCloudinaryProcessing] = useState<boolean>(false);
 
     const form = useForm<UserTZ>({
         resolver: zodResolver(userSchema),
@@ -76,10 +80,22 @@ export default function ProfileSettings() {
         const success = await updateUser(payload);
 
         if (success) {
-            alert("Profile updated successfully!");
+            toast(`Profile updated successfully!`, {
+                description: `Changes have been saved.`,
+                action: {
+                    label: "Roger",
+                    onClick: () => null,
+                },
+            })
         }
         else {
-            alert("An error occurred. Please try again.");
+            toast(`Error updating profile`, {
+                description: `Try again later.`,
+                action: {
+                    label: "Roger",
+                    onClick: () => null,
+                },
+            })
         }
     }
 
@@ -101,8 +117,8 @@ export default function ProfileSettings() {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (form.formState.isDirty) {
                 e.preventDefault();
-                e.returnValue = "Are you sure you want to leave? Your changes may not be saved.";
-                return "Are you sure you want to leave? Your changes may not be saved.";
+                // e.returnValue = "Are you sure you want to leave? Your changes may not be saved.";
+                // return "Are you sure you want to leave? Your changes may not be saved.";
             }
         }
         window.addEventListener("beforeunload", handleBeforeUnload);
@@ -133,21 +149,38 @@ export default function ProfileSettings() {
         )
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handlePreviewChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader();
+            const reader = new FileReader()
             reader.onloadend = () => {
-                setImage(reader.result as string);
+                setPreview(reader.result as string)
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file)
         }
     }
 
-    const handleAvatarUpload = () => {
-        if (image) {
-            setAvatar(image);
-            setImage("");
+    const handleAvatarUpload = async () => {
+        if (preview) {
+            setIsCloudinaryProcessing(true)
+
+            try {
+                const response = await uploadToCloudinary(preview)
+
+                if (response.url) {
+                    setAvatar(response.url)
+                    setPreview("")
+                }
+                else {
+                    toast("Upload failed. Please try again.")
+                }
+            }
+            catch (error) {
+                toast("Upload failed. Please try again.")
+            }
+            finally {
+                setIsCloudinaryProcessing(false)
+            }
         }
     }
 
@@ -173,14 +206,24 @@ export default function ProfileSettings() {
                 <CardContent>
 
                     <div className="flex items-center space-x-4">
-                        <Avatar className="w-24 h-24">
-                            <AvatarImage src={avatar || ""} alt={form.watch("name") || "User Avatar"}
-                                className="object-cover object-center"
-                            />
-                            <AvatarFallback>{form.watch("name") ? form.watch("name").charAt(0) : "U"}</AvatarFallback>
+                        <Avatar className="w-24 h-24 flex items-center justify-center">
+                            {
+                                isCloudinaryProcessing
+                                    ? (
+                                        <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
+                                            <span className="sr-only">Loading...</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <AvatarImage src={avatar || ""} alt={form.watch("name") || "User Avatar"}
+                                                className="object-cover object-center" />
+                                            <AvatarFallback><h1 className="text-lg">{form.watch("name") ? GetInitials(form.watch("name")) : "U"}</h1></AvatarFallback>
+                                        </>
+                                    )
+                            }
                         </Avatar>
                         <div className="mt-8 space-x-4 flex">
-                            <Dialog onOpenChange={(open) => !open && setImage("")}>
+                            <Dialog onOpenChange={(open) => !open && setPreview("")}>
                                 <DialogTrigger asChild>
                                     <Button
                                         variant="outline"
@@ -197,13 +240,13 @@ export default function ProfileSettings() {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
-                                        {image && <img src={image} alt="Preview" className="w-44 h-44 object-cover rounded-md mx-auto" />}
-                                        <Input id="picture" type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" />
+                                        {preview && <img src={preview} alt="Preview" className="w-44 h-44 object-cover rounded-md mx-auto" />}
+                                        <Input id="picture" type="file" accept="image/*" onChange={handlePreviewChange} className="cursor-pointer" />
                                     </div>
                                     <DialogFooter>
                                         <DialogClose asChild>
                                             <Button type="button" variant="ghost"
-                                                onClick={() => setImage("")}
+                                                onClick={() => setPreview("")}
                                             >
                                                 Close
                                             </Button>

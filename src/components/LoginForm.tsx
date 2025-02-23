@@ -1,5 +1,5 @@
 import { AuthForm } from "./AuthForm";
-import { loginUser } from "@/actions/actions";
+import { loginUser } from "@/lib/actions";
 
 export function LoginForm() {
     return (

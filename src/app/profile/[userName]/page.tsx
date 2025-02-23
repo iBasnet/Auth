@@ -4,17 +4,11 @@ import { Button } from "@/components/ui/button"
 import { UserProfileCard } from "@/components/user-profile-card"
 import { Box } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { UserT } from "../settings/page";
 import { useEffect, useState } from "react";
-import { getUser } from "@/actions/actions";
-import { getUserDate } from "@/actions/actions";
-
-type UserDateT = {
-    joined: string;
-    logged: string;
-}
-
-export type { UserDateT };
+import { getUser } from "@/lib/actions";
+import { getUserDate } from "@/lib/actions";
+import type { UserT } from "../settings/page";
+import type { UserDateT } from "@/lib/types";
 
 export default function ProfilePage() {
 

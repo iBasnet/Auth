@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,19 +8,42 @@ import { UserNav } from "./components/user-nav";
 import { MainNav } from "./components/main-nav";
 import { Search } from "./components/search";
 import ToDoCard from "./components/ToDoCard";
+import { getUserToDos, updateUserToDo } from "@/lib/actions";
+import type { ToDoT } from "@/lib/types";
 
 export default function DashboardPage() {
     const [searchTerm, setSearchTerm] = useState("");
+    const [todos, setToDos] = useState<ToDoT[]>();
 
-    const todos = [
-        { time: "This month", task: "Learn Next.js", category: "Mastery", isComplete: false },
-        { time: "This week", task: "Honors College Form", category: "Academics", isComplete: false },
-        { time: "Today", task: "Cold Shower", category: "Discipline", isComplete: true },
-    ];
+    const fetchToDos = async () => {
+        try {
+            const todos = await getUserToDos();
+            setToDos(todos);
+        }
+        catch (err) {
+            console.error(err);
+            return [];
+        }
+    }
 
-    const filteredTodos = todos.filter((todo) =>
+    useEffect(() => {
+        fetchToDos();
+    }, []);
+
+    const filteredTodos = todos?.filter((todo) =>
         todo.task.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const testToDo = {
+        dueBy: new Date(),
+        task: "Test Task",
+        isComplete: false,
+        category: "General"
+    }
+
+    const handleLaunch = async () => {
+        await updateUserToDo(testToDo);
+    }
 
     return (
         <>
@@ -55,7 +78,9 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between space-y-2">
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                         <div className="flex items-center space-x-2">
-                            <Button>Monk Mode</Button>
+                            <form action={handleLaunch}>
+                                <Button>Launch Mission</Button>
+                            </form>
                         </div>
                     </div>
 
@@ -71,10 +96,13 @@ export default function DashboardPage() {
                         <TabsContent value="all">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    filteredTodos.length > 0 ? (
-                                        filteredTodos.map((todo, index) => <ToDoCard key={index} {...todo} />)
-                                    ) : (
-                                        <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                    filteredTodos &&
+                                    (
+                                        filteredTodos.length > 0 ? (
+                                            filteredTodos.map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                        ) : (
+                                            <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                        )
                                     )
                                 }
                             </div>
@@ -83,12 +111,15 @@ export default function DashboardPage() {
                         <TabsContent value="pending">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    filteredTodos.some((todo) => !todo.isComplete) ? (
-                                        filteredTodos
-                                            .filter((todo) => !todo.isComplete)
-                                            .map((todo, index) => <ToDoCard key={index} {...todo} />)
-                                    ) : (
-                                        <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                    filteredTodos &&
+                                    (
+                                        filteredTodos.some((todo) => !todo.isComplete) ? (
+                                            filteredTodos
+                                                .filter((todo) => !todo.isComplete)
+                                                .map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                        ) : (
+                                            <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                        )
                                     )
                                 }
                             </div>
@@ -97,12 +128,15 @@ export default function DashboardPage() {
                         <TabsContent value="completed">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    filteredTodos.some((todo) => todo.isComplete) ? (
-                                        filteredTodos
-                                            .filter((todo) => todo.isComplete)
-                                            .map((todo, index) => <ToDoCard key={index} {...todo} />)
-                                    ) : (
-                                        <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                    filteredTodos &&
+                                    (
+                                        filteredTodos.some((todo) => todo.isComplete) ? (
+                                            filteredTodos
+                                                .filter((todo) => todo.isComplete)
+                                                .map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                        ) : (
+                                            <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                        )
                                     )
                                 }
                             </div>
@@ -119,5 +153,5 @@ export default function DashboardPage() {
                 </div>
             </div>
         </>
-    );
+    )
 }

@@ -12,7 +12,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { logoutUser } from "@/actions/actions";
+import { logoutUser } from "@/lib/actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

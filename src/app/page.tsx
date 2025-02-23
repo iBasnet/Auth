@@ -9,7 +9,7 @@ export default function page() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen flex gap-4 items-center justify-center">
+    <main className="min-h-screen flex flex-col gap-4 items-center justify-center">
       <h1 className="text-3xl">
         Authentication
       </h1>

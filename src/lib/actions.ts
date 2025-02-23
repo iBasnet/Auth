@@ -5,8 +5,9 @@ import { connectDB } from "@/lib/db";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { deleteCookies, generateToken, setAuthCookie, setUsernameCookie, verifyAuthToken } from "@/lib/auth";
-import type { UserT } from "@/app/profile/settings/page";
 import { format } from "date-fns";
+import type { UserT } from "@/app/profile/settings/page";
+import { ToDoT } from "./types";
 
 const loginSchema = z.object({
     username: z
@@ -172,7 +173,6 @@ export const updateUser = async (payload: UserT) => {
 }
 
 export const getUserDate = async () => {
-
     await connectDB();
 
     try {
@@ -192,5 +192,39 @@ export const getUserDate = async () => {
     }
     catch (err: any) {
         return { error: err.message || "An unexpected error occurred" };
+    }
+}
+
+export const getUserToDos = async () => {
+    await connectDB();
+
+    try {
+        const userId = await verifyAuthToken();
+        const user = await User.findOne({ _id: userId });
+        const { todos } = user;
+
+        return todos;
+    }
+    catch (err: any) {
+        return { error: err.message || "An unexpected error occurred" };
+    }
+}
+
+export const updateUserToDo = async (payload: ToDoT) => {
+    await connectDB();
+
+    try {
+        const userId = await verifyAuthToken();
+
+        await User.updateOne(
+            { _id: userId },
+            { $set: { todos: payload } }
+        )
+
+        return true;
+    }
+    catch (err: any) {
+        console.log(err.message || "An unexpected error occurred");
+        return false
     }
 }

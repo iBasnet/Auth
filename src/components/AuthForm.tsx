@@ -47,7 +47,7 @@ export function AuthForm({
 
     useEffect(() => {
         if (state?.error) {
-            toast("Failed To Register User", {
+            toast(`Failed To ${title === "Login" ? "Login" : "Register"} User`, {
                 description: `${state.error}`,
                 action: {
                     label: "Roger",

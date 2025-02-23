@@ -2,19 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Activity, CircleCheckBig } from "lucide-react";
+import type { ToDoT } from "@/lib/types";
 
-type ToDoT = {
-    time: string;
-    task: string;
-    category: string;
-    isComplete: boolean;
-}
-
-export default function ToDoCard({ time, task, category, isComplete }: ToDoT) {
+export default function ToDoCard({ dueBy, task, isComplete, category }: ToDoT) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{time}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><p>{dueBy.toString()}</p></CardTitle>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>

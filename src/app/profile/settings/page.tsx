@@ -32,20 +32,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { GetInitials } from "@/lib/utils";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { userSchema } from "@/lib/zodSchema";
+import type { UserT, UserTZ } from "@/lib/zodSchema";
 
-const userSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    username: z.string().min(3, "Username must be at least 3 characters"),
-    jobTitle: z.string().min(2, "Job title must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    location: z.string().min(2, "Location must be at least 2 characters"),
-    bio: z.string().max(500, "Bio must not exceed 500 characters"),
-})
-
-type UserTZ = z.infer<typeof userSchema>
-type UserT = UserTZ & { avatar: string }
-
-export type { UserT };
 
 export default function ProfileSettings() {
 

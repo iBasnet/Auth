@@ -8,9 +8,9 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import type { UserT } from "@/app/profile/settings/page"
-import type { UserDateT } from "@/app/profile/[userName]/page"
 import { GetInitials } from "@/lib/utils"
+import type { UserT } from "@/lib/zodSchema"
+import type { UserDateT } from "@/lib/types"
 
 export function UserProfileCard({ user, userDate }: { user: UserT, userDate: UserDateT }) {
     return (

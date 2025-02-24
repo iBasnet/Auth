@@ -2,31 +2,18 @@
 
 import { User } from "@/lib/models";
 import { connectDB } from "@/lib/db";
-import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { deleteCookies, generateToken, setAuthCookie, setUsernameCookie, verifyAuthToken } from "@/lib/auth";
 import { format } from "date-fns";
-import type { UserT } from "@/app/profile/settings/page";
+import { authSchema, type MissionT, type UserT } from "@/lib/zodSchema";
 import { ToDoT } from "./types";
 
-const loginSchema = z.object({
-    username: z
-        .string()
-        .min(3, { message: "Username must be at least 3 characters long" })
-        .max(16, { message: "Username must be at most 16 characters long" }),
-
-    password: z
-        .string()
-        .min(6, { message: "Password must be at least 6 characters long" })
-        .max(32, { message: "Password must be at most 32 characters long" }),
-});
 
 export const registerUser = async (prevState: any, formData: FormData) => {
-
     await connectDB();
 
     try {
-        const result = loginSchema.safeParse({
+        const result = authSchema.safeParse({
             username: formData.get("username") as string,
             password: formData.get("password") as string,
         })
@@ -66,11 +53,10 @@ export const registerUser = async (prevState: any, formData: FormData) => {
 }
 
 export const loginUser = async (prevState: any, formData: FormData) => {
-
     await connectDB();
 
     try {
-        const result = loginSchema.safeParse({
+        const result = authSchema.safeParse({
             username: formData.get("username") as string,
             password: formData.get("password") as string,
         })
@@ -117,7 +103,6 @@ export const loginUser = async (prevState: any, formData: FormData) => {
 }
 
 export const logoutUser = async () => {
-
     await connectDB();
 
     try {
@@ -132,11 +117,9 @@ export const logoutUser = async () => {
 }
 
 export const getUser = async () => {
-
     await connectDB();
 
     try {
-
         const userId = await verifyAuthToken();
 
         const user = await User.findOne({ _id: userId });
@@ -186,7 +169,7 @@ export const getUserDate = async () => {
         const userDate = {
             joined: format(new Date(createdAt), "MMM d, yyyy"),
             logged: format(new Date(updatedAt), "MMM d, yyyy")
-        };
+        }s
 
         return userDate;
     }
@@ -201,9 +184,13 @@ export const getUserToDos = async () => {
     try {
         const userId = await verifyAuthToken();
         const user = await User.findOne({ _id: userId });
-        const { todos } = user;
 
-        return todos;
+        if (!user) {
+            return { error: "User not found" };
+        }
+
+        return JSON.parse(JSON.stringify(user.todos)); // 🔥❤️‍🔥🐦‍🔥
+
     }
     catch (err: any) {
         return { error: err.message || "An unexpected error occurred" };
@@ -226,5 +213,24 @@ export const updateUserToDo = async (payload: ToDoT) => {
     catch (err: any) {
         console.log(err.message || "An unexpected error occurred");
         return false
+    }
+}
+
+export const createToDo = async (payload: MissionT) => {
+    connectDB();
+
+    try {
+        const userId = await verifyAuthToken();
+
+        await User.updateOne(
+            { _id: userId },
+            { $push: { todos: { ...payload } } }
+        )
+
+        return true;
+    }
+    catch (err: any) {
+        console.log(err.message || "An unexpected error occurred");
+        return false;
     }
 }

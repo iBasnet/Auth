@@ -3,12 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Activity, CircleCheckBig } from "lucide-react";
 import type { ToDoT } from "@/lib/types";
+import { formatDistanceToNow, isPast } from "date-fns";
 
 export default function ToDoCard({ dueBy, task, isComplete, category }: ToDoT) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground"><p>{dueBy.toString()}</p></CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                    <p>
+                        Due {isPast(dueBy) ? `${formatDistanceToNow(dueBy)} ago` : `in ${formatDistanceToNow(dueBy)}`}
+                    </p></CardTitle>
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>

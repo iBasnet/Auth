@@ -4,6 +4,9 @@ export type ToDoT = {
     task: String,
     isComplete: Boolean,
     category: String
+    _id?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export type UserDateT = {

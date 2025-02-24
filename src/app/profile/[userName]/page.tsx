@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getUser } from "@/lib/actions";
 import { getUserDate } from "@/lib/actions";
-import type { UserT } from "../settings/page";
+import type { UserT } from "@/lib/zodSchema";
 import type { UserDateT } from "@/lib/types";
 
 export default function ProfilePage() {

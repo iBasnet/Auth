@@ -8,42 +8,46 @@ import { UserNav } from "./components/user-nav";
 import { MainNav } from "./components/main-nav";
 import { Search } from "./components/search";
 import ToDoCard from "./components/ToDoCard";
-import { getUserToDos, updateUserToDo } from "@/lib/actions";
+import { createToDo, getUserToDos, updateUserToDo } from "@/lib/actions";
 import type { ToDoT } from "@/lib/types";
+import { toast } from "sonner";
+import DialogSetPush from "./components/DialogSetPush";
+
 
 export default function DashboardPage() {
+
     const [searchTerm, setSearchTerm] = useState("");
-    const [todos, setToDos] = useState<ToDoT[]>();
+    const [todos, setToDos] = useState<ToDoT[]>([]);
 
     const fetchToDos = async () => {
         try {
             const todos = await getUserToDos();
+            if (todos.error) {
+                toast(`An unexpected error occurred!`, {
+                    description: todos.error,
+                    action: {
+                        label: "Roger",
+                        onClick: () => null,
+                    },
+                })
+                return;
+            }
             setToDos(todos);
+            console.log(todos);
         }
-        catch (err) {
-            console.error(err);
-            return [];
+        catch (err: any) {
+            console.error(err.message);
+            return;
         }
     }
 
     useEffect(() => {
         fetchToDos();
-    }, []);
+    }, [])
 
     const filteredTodos = todos?.filter((todo) =>
         todo.task.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const testToDo = {
-        dueBy: new Date(),
-        task: "Test Task",
-        isComplete: false,
-        category: "General"
-    }
-
-    const handleLaunch = async () => {
-        await updateUserToDo(testToDo);
-    }
+    )
 
     return (
         <>
@@ -78,9 +82,9 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between space-y-2">
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                         <div className="flex items-center space-x-2">
-                            <form action={handleLaunch}>
-                                <Button>Launch Mission</Button>
-                            </form>
+
+                            <DialogSetPush />
+
                         </div>
                     </div>
 

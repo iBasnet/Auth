@@ -27,11 +27,11 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { getUser, updateUser } from "@/lib/actions"
+import { getUser, updateUser } from "@/lib/actions/user"
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { GetInitials } from "@/lib/utils";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { uploadToCloudinary } from "@/lib/db/cloudinary";
 import { userSchema } from "@/lib/zodSchema";
 import type { UserT, UserTZ } from "@/lib/zodSchema";
 
@@ -62,9 +62,6 @@ export default function ProfileSettings() {
             ...data,
             avatar: avatar,
         }
-
-        // test logs
-        // console.log("Updated user data:", data);
 
         const success = await updateUser(payload);
 

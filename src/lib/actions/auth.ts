@@ -1,13 +1,10 @@
 "use server";
 
-import { User } from "@/lib/models";
-import { connectDB } from "@/lib/db";
+import { User } from "@/lib/db/models";
+import { connectDB } from "@/lib/db/db";
 import bcrypt from "bcryptjs";
 import { deleteCookies, generateToken, setAuthCookie, setUsernameCookie, verifyAuthToken } from "@/lib/auth";
-import { format } from "date-fns";
 import { authSchema, type MissionT, type UserT } from "@/lib/zodSchema";
-import { ToDoT } from "./types";
-
 
 export const registerUser = async (prevState: any, formData: FormData) => {
     await connectDB();
@@ -112,125 +109,6 @@ export const logoutUser = async () => {
     }
     catch (err: any) {
         console.error(err.message || "An unexpected error occurred");
-        return false;
-    }
-}
-
-export const getUser = async () => {
-    await connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-
-        const user = await User.findOne({ _id: userId });
-
-        const { avatar, name, username, jobTitle, email, location, bio } = user;
-
-        const userPublicData = { avatar, name, username, jobTitle, email, location, bio };
-
-        return userPublicData;
-    }
-    catch (err: any) {
-        return { error: err.message || "An unexpected error occurred" };
-    }
-}
-
-export const updateUser = async (payload: UserT) => {
-
-    await connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-
-        await User.updateOne(
-            { _id: userId },
-            { $set: { ...payload } }
-        )
-
-        return true;
-    }
-    catch (err: any) {
-        console.log(err.message || "An unexpected error occurred");
-        return false
-    }
-}
-
-export const getUserDate = async () => {
-    await connectDB();
-
-    try {
-
-        const userId = await verifyAuthToken();
-
-        const user = await User.findOne({ _id: userId });
-
-        const { createdAt, updatedAt } = user;
-
-        const userDate = {
-            joined: format(new Date(createdAt), "MMM d, yyyy"),
-            logged: format(new Date(updatedAt), "MMM d, yyyy")
-        }s
-
-        return userDate;
-    }
-    catch (err: any) {
-        return { error: err.message || "An unexpected error occurred" };
-    }
-}
-
-export const getUserToDos = async () => {
-    await connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-        const user = await User.findOne({ _id: userId });
-
-        if (!user) {
-            return { error: "User not found" };
-        }
-
-        return JSON.parse(JSON.stringify(user.todos)); // 🔥❤️‍🔥🐦‍🔥
-
-    }
-    catch (err: any) {
-        return { error: err.message || "An unexpected error occurred" };
-    }
-}
-
-export const updateUserToDo = async (payload: ToDoT) => {
-    await connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-
-        await User.updateOne(
-            { _id: userId },
-            { $set: { todos: payload } }
-        )
-
-        return true;
-    }
-    catch (err: any) {
-        console.log(err.message || "An unexpected error occurred");
-        return false
-    }
-}
-
-export const createToDo = async (payload: MissionT) => {
-    connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-
-        await User.updateOne(
-            { _id: userId },
-            { $push: { todos: { ...payload } } }
-        )
-
-        return true;
-    }
-    catch (err: any) {
-        console.log(err.message || "An unexpected error occurred");
         return false;
     }
 }

@@ -1,6 +1,5 @@
 import * as z from "zod"
 
-
 // auth
 export const authSchema = z.object({
     username: z

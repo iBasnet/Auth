@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { getUser, logoutUser } from "@/lib/actions";
+import { getUser, } from "@/lib/actions/user";
+import { logoutUser } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
 import { GetInitials, TitleCase } from "@/lib/utils";
 

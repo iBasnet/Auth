@@ -32,33 +32,63 @@ import {
 import { Controller, Form, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { createToDo } from "@/lib/actions";
+import { createToDo } from "@/lib/actions/todo";
 import { missionSchema, MissionTZ } from "@/lib/zodSchema";
+import { toast } from "sonner";
 
 
-export default function DialogSetPush() {
+export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }) {
 
     const [date, setDate] = useState<Date>()
+    const [dialogOpen, setDialogOpen] = useState<boolean | undefined>(undefined)
 
-    const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-        resolver: zodResolver(missionSchema),
-        defaultValues: {
-            task: "Lock in baby lock in",
-            category: "Discipline"
-        }
-    })
+    const { register, control, handleSubmit, reset,
+        formState: { errors, isSubmitting } } = useForm({
+            resolver: zodResolver(missionSchema),
+            // defaultValues: {
+            //     task: "Lock in baby lock in",
+            //     category: "Discipline"
+            // }
+        })
 
     const onSubmit = async (data: MissionTZ) => {
         // await new Promise(resolve => setTimeout(resolve, 3000))
         if (date) {
-            const result = await createToDo({ ...data, dueBy: date.toString() });
-            if (result) alert("Mission added successfully!")
-            else alert("Failed to add mission!")
+            const success = await createToDo({ ...data, dueBy: date.toString() });
+            if (success) {
+                toast(`Mission added successfully!`, {
+                    description: `It's time to accomplish it.`,
+                    action: {
+                        label: "Roger",
+                        onClick: () => null,
+                    },
+                })
+                reset();
+                setDate(undefined);
+                setDialogOpen(false);
+                fetchToDos();
+            }
+            else {
+                toast(`Error adding mission!`, {
+                    description: `Try again later.`,
+                    action: {
+                        label: "Roger",
+                        onClick: () => null,
+                    },
+                })
+            }
         }
     }
 
     return (
-        <Dialog>
+        <Dialog
+            open={dialogOpen}
+            onOpenChange={() => {
+                reset();
+                setDate(undefined);
+                setDialogOpen(undefined); // 🔥❤️‍🔥🐦‍🔥
+            }}
+        >
             <DialogTrigger asChild>
                 <Button>Launch Mission</Button>
             </DialogTrigger>
@@ -74,7 +104,7 @@ export default function DialogSetPush() {
 
                     <div className="grid gap-4 py-4">
                         <div className="">
-                            <Label htmlFor="name" className="text-right">
+                            <Label className="text-right">
                                 Mission Description
                             </Label>
                             <Textarea placeholder="Deploy your plans here..."
@@ -92,7 +122,7 @@ export default function DialogSetPush() {
                                 name="category"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <SelectTrigger className="col-span-3">
                                             <SelectValue placeholder="Select a category" />
                                         </SelectTrigger>
@@ -156,6 +186,6 @@ export default function DialogSetPush() {
                 </form>
 
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }

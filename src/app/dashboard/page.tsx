@@ -8,7 +8,7 @@ import { UserNav } from "./components/user-nav";
 import { MainNav } from "./components/main-nav";
 import { Search } from "./components/search";
 import ToDoCard from "./components/ToDoCard";
-import { createToDo, getUserToDos, updateUserToDo } from "@/lib/actions";
+import { getUserToDos } from "@/lib/actions/todo";
 import type { ToDoT } from "@/lib/types";
 import { toast } from "sonner";
 import DialogSetPush from "./components/DialogSetPush";
@@ -83,7 +83,7 @@ export default function DashboardPage() {
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                         <div className="flex items-center space-x-2">
 
-                            <DialogSetPush />
+                            <DialogSetPush fetchToDos={fetchToDos} />
 
                         </div>
                     </div>

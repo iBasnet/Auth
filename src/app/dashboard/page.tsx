@@ -83,7 +83,14 @@ export default function DashboardPage() {
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                         <div className="flex items-center space-x-2">
 
-                            <DialogSetPush fetchToDos={fetchToDos} />
+                            <DialogSetPush
+                                fetchToDos={fetchToDos}
+                                trigger={
+                                    <Button>Launch Mission</Button>
+                                }
+                                title={"Add ToDo"}
+                                description_={"Let's launch a new mission and accomplish it."}
+                            />
 
                         </div>
                     </div>
@@ -103,7 +110,7 @@ export default function DashboardPage() {
                                     filteredTodos &&
                                     (
                                         filteredTodos.length > 0 ? (
-                                            filteredTodos.map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                            filteredTodos.map((todo, index) => <ToDoCard key={index} {...todo} fetchToDos={fetchToDos} />)
                                         ) : (
                                             <p className="text-center text-muted-foreground py-2">No tasks found.</p>
                                         )
@@ -120,7 +127,7 @@ export default function DashboardPage() {
                                         filteredTodos.some((todo) => !todo.isComplete) ? (
                                             filteredTodos
                                                 .filter((todo) => !todo.isComplete)
-                                                .map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                                .map((todo, index) => <ToDoCard key={index} {...todo} fetchToDos={fetchToDos} />)
                                         ) : (
                                             <p className="text-center text-muted-foreground py-2">No tasks found.</p>
                                         )
@@ -137,7 +144,7 @@ export default function DashboardPage() {
                                         filteredTodos.some((todo) => todo.isComplete) ? (
                                             filteredTodos
                                                 .filter((todo) => todo.isComplete)
-                                                .map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                                .map((todo, index) => <ToDoCard key={index} {...todo} fetchToDos={fetchToDos} />)
                                         ) : (
                                             <p className="text-center text-muted-foreground py-2">No tasks found.</p>
                                         )

@@ -31,13 +31,26 @@ import {
 } from "@/components/ui/popover"
 import { Controller, Form, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { createToDo } from "@/lib/actions/todo";
 import { missionSchema, MissionTZ } from "@/lib/zodSchema";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { set } from "mongoose";
 
+type DialogSetPushProps = {
+    fetchToDos: () => void,
+    trigger: JSX.Element,
+    title: string,
+    description_: string,
+    task?: string,
+    category?: string,
+    dueBy?: Date
+}
 
-export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }) {
+export default function DialogSetPush({
+    fetchToDos, trigger, title, description_, task, category, dueBy
+}: DialogSetPushProps) {
 
     const [date, setDate] = useState<Date>()
     const [dialogOpen, setDialogOpen] = useState<boolean | undefined>(undefined)
@@ -80,23 +93,35 @@ export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }
         }
     }
 
+    useEffect(() => {
+        if (task) {
+            reset({
+                task: task,
+                category: category,
+            })
+            setDate(dueBy);
+        }
+    }, [task, category, reset]);
+
     return (
         <Dialog
             open={dialogOpen}
             onOpenChange={() => {
                 reset();
-                setDate(undefined);
+                if (!task) {
+                    setDate(undefined);
+                }
                 setDialogOpen(undefined); // 🔥❤️‍🔥🐦‍🔥
             }}
         >
             <DialogTrigger asChild>
-                <Button>Launch Mission</Button>
+                {trigger}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Add ToDo</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        Let's launch a new mission and accomplish it.
+                        {description_}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -108,6 +133,7 @@ export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }
                                 Mission Description
                             </Label>
                             <Textarea placeholder="Deploy your plans here..."
+                                defaultValue={task}
                                 {...register("task")}
                             />
                             {errors.task && <span className="text-red-500">{errors.task.message}</span>}
@@ -122,7 +148,7 @@ export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }
                                 name="category"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={category}>
                                         <SelectTrigger className="col-span-3">
                                             <SelectValue placeholder="Select a category" />
                                         </SelectTrigger>
@@ -131,6 +157,7 @@ export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }
                                                 <SelectItem value="Academics">Academics</SelectItem>
                                                 <SelectItem value="Mastery">Mastery</SelectItem>
                                                 <SelectItem value="Discipline">Discipline</SelectItem>
+                                                <SelectItem value="General">General</SelectItem>
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
@@ -161,7 +188,7 @@ export default function DialogSetPush({ fetchToDos }: { fetchToDos: () => void }
                                 <PopoverContent className="w-auto p-0">
                                     <Calendar
                                         mode="single"
-                                        selected={date}
+                                        selected={date || dueBy}
                                         onSelect={setDate}
                                         initialFocus
                                     />

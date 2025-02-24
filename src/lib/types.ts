@@ -1,9 +1,9 @@
 
 export type ToDoT = {
     dueBy: Date,
-    task: String,
+    task: string,
     isComplete: Boolean,
-    category: String
+    category: string
     _id?: string;
     createdAt?: string;
     updatedAt?: string;

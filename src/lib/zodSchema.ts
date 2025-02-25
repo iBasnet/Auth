@@ -35,4 +35,4 @@ export const missionSchema = z.object({
 })
 
 export type MissionTZ = z.infer<typeof missionSchema>;
-export type MissionT = MissionTZ & { dueBy: string };
+export type MissionT = MissionTZ & { dueBy: Date };

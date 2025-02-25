@@ -90,6 +90,7 @@ export default function DashboardPage() {
                                 }
                                 title={"Add ToDo"}
                                 description_={"Let's launch a new mission and accomplish it."}
+                                operationMode={"create"}
                             />
 
                         </div>

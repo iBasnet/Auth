@@ -25,25 +25,6 @@ export const getUserToDos = async () => {
     }
 }
 
-export const updateUserToDo = async (payload: ToDoT) => {
-    await connectDB();
-
-    try {
-        const userId = await verifyAuthToken();
-
-        await User.updateOne(
-            { _id: userId },
-            { $set: { todos: payload } }
-        )
-
-        return true;
-    }
-    catch (err: any) {
-        console.log(err.message || "An unexpected error occurred");
-        return false
-    }
-}
-
 export const createToDo = async (payload: MissionT) => {
     connectDB();
 
@@ -52,7 +33,9 @@ export const createToDo = async (payload: MissionT) => {
 
         await User.updateOne(
             { _id: userId },
-            { $push: { todos: { ...payload } } }
+            {
+                $push: { todos: { ...payload } }
+            }
         )
 
         return true;
@@ -60,5 +43,37 @@ export const createToDo = async (payload: MissionT) => {
     catch (err: any) {
         console.log(err.message || "An unexpected error occurred");
         return false;
+    }
+}
+
+export const updateToDo = async (payload: ToDoT) => {
+    await connectDB();
+
+    try {
+        const userId = await verifyAuthToken();
+
+        const result = await User.updateOne(
+            { _id: userId, "todos._id": payload._id },
+            {
+                $set: {
+                    "todos.$.task": payload.task,
+                    "todos.$.category": payload.category,
+                    "todos.$.dueBy": payload.dueBy,
+                    "todos.$.isComplete": payload.isComplete,
+                }
+                // $(Position Operator): The "$" is used to refer to the "first matching element" in the todos array "that satisfies the condition you specify in the query".
+            }
+        );
+
+        if (result.modifiedCount === 0) {
+            console.log("Document was not updated");
+            return false;
+        }
+
+        return true;
+    }
+    catch (err: any) {
+        console.log(err.message || "An unexpected error occurred");
+        return false
     }
 }

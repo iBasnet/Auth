@@ -32,24 +32,28 @@ import {
 import { Controller, Form, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { JSX, useState } from "react";
-import { createToDo } from "@/lib/actions/todo";
+import { createToDo, updateToDo } from "@/lib/actions/todo";
 import { missionSchema, MissionTZ } from "@/lib/zodSchema";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { set } from "mongoose";
 
 type DialogSetPushProps = {
     fetchToDos: () => void,
     trigger: JSX.Element,
     title: string,
     description_: string,
+    operationMode: "create" | "update"
+    _id?: string,
+    dueBy?: Date
     task?: string,
     category?: string,
-    dueBy?: Date
+    isComplete?: boolean,
+    createdAt?: Date,
+    updatedAt?: Date
 }
 
 export default function DialogSetPush({
-    fetchToDos, trigger, title, description_, task, category, dueBy
+    fetchToDos, trigger, title, description_, operationMode, _id, dueBy, task, category, isComplete, createdAt, updatedAt
 }: DialogSetPushProps) {
 
     const [date, setDate] = useState<Date>()
@@ -64,31 +68,51 @@ export default function DialogSetPush({
             // }
         })
 
+    const renderToast = (operationMode: string, success: boolean) => {
+        if (success) {
+            toast(`Mission ${operationMode === 'create' ? 'added' : 'updated'} successfully!`, {
+                description: `It's time to accomplish it.`,
+                action: {
+                    label: "Roger",
+                    onClick: () => null,
+                },
+            })
+            reset();
+            setDate(undefined);
+            setDialogOpen(false);
+            fetchToDos();
+        }
+        else {
+            toast(`Error ${operationMode === 'create' ? 'adding' : 'updating'} mission!`, {
+                description: `Try again later.`,
+                action: {
+                    label: "Roger",
+                    onClick: () => null,
+                },
+            })
+        }
+    }
+
     const onSubmit = async (data: MissionTZ) => {
         // await new Promise(resolve => setTimeout(resolve, 3000))
         if (date) {
-            const success = await createToDo({ ...data, dueBy: date.toString() });
-            if (success) {
-                toast(`Mission added successfully!`, {
-                    description: `It's time to accomplish it.`,
-                    action: {
-                        label: "Roger",
-                        onClick: () => null,
-                    },
-                })
-                reset();
-                setDate(undefined);
-                setDialogOpen(false);
-                fetchToDos();
+            if (operationMode === "create") {
+                const success = await createToDo({
+                    ...data,
+                    dueBy: date,
+                });
+                renderToast(operationMode, success);
             }
-            else {
-                toast(`Error adding mission!`, {
-                    description: `Try again later.`,
-                    action: {
-                        label: "Roger",
-                        onClick: () => null,
-                    },
-                })
+            if (operationMode === "update") {
+                const success = await updateToDo({
+                    ...data,
+                    _id: _id,
+                    dueBy: date,
+                    isComplete: isComplete,
+                    // createdAt: createdAt,
+                    // updatedAt: updatedAt
+                });
+                renderToast(operationMode, success);
             }
         }
     }

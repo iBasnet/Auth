@@ -1,12 +1,12 @@
 
 export type ToDoT = {
+    _id?: string;
     dueBy: Date,
     task: string,
-    isComplete: Boolean,
     category: string
-    _id?: string;
-    createdAt?: string;
-    updatedAt?: string;
+    isComplete?: boolean,
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export type UserDateT = {

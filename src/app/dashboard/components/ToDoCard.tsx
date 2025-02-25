@@ -8,7 +8,7 @@ import DialogSetPush from "./DialogSetPush";
 
 type ToDoCardProps = ToDoT & { fetchToDos: () => void };
 
-export default function ToDoCard({ dueBy, task, isComplete, category, fetchToDos }: ToDoCardProps) {
+export default function ToDoCard({ dueBy, task, isComplete, category, _id, createdAt, updatedAt, fetchToDos }: ToDoCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -32,9 +32,14 @@ export default function ToDoCard({ dueBy, task, isComplete, category, fetchToDos
                                     }
                                     title={"Edit ToDo"}
                                     description_={"Let's edit the mission and accomplish it."}
+                                    operationMode={"update"}
+                                    _id={_id}
+                                    dueBy={dueBy}
                                     task={task}
                                     category={category}
-                                    dueBy={dueBy}
+                                    isComplete={isComplete}
+                                    createdAt={createdAt}
+                                    updatedAt={updatedAt}
                                 />
                             </div>
                         </TooltipTrigger>

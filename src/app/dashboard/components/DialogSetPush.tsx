@@ -38,7 +38,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 
 type DialogSetPushProps = {
-    fetchToDos: () => void,
     trigger: JSX.Element,
     title: string,
     description_: string,
@@ -53,7 +52,7 @@ type DialogSetPushProps = {
 }
 
 export default function DialogSetPush({
-    fetchToDos, trigger, title, description_, operationMode, _id, dueBy, task, category, isComplete, createdAt, updatedAt
+    trigger, title, description_, operationMode, _id, dueBy, task, category, isComplete, createdAt, updatedAt
 }: DialogSetPushProps) {
 
     const [date, setDate] = useState<Date>()
@@ -80,7 +79,6 @@ export default function DialogSetPush({
             reset();
             setDate(undefined);
             setDialogOpen(false);
-            fetchToDos();
         }
         else {
             toast(`Error ${operationMode === 'create' ? 'adding' : 'updating'} mission!`, {
@@ -160,7 +158,7 @@ export default function DialogSetPush({
                                 defaultValue={task}
                                 {...register("task")}
                             />
-                            {errors.task && <span className="text-red-500">{errors.task.message}</span>}
+                            {errors.task && <span className="text-rose-500 text-sm">{errors.task.message}</span>}
                         </div>
 
                         <div className="grid grid-cols-4">
@@ -187,7 +185,7 @@ export default function DialogSetPush({
                                     </Select>
                                 )}
                             />
-                            {errors.category && <span className="text-red-500">{errors.category.message}</span>}
+                            {errors.category && <span className="text-rose-500 text-sm">{errors.category.message}</span>}
                         </div>
 
                         <div className="grid grid-cols-4">

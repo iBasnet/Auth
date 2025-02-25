@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db/db";
 import { verifyAuthToken } from "@/lib/auth";
 import { type MissionT } from "@/lib/zodSchema";
 import { ToDoT } from "../types";
+import { revalidatePath } from "next/cache";
 
 export const getUserToDos = async () => {
     await connectDB();
@@ -31,14 +32,18 @@ export const createToDo = async (payload: MissionT) => {
     try {
         const userId = await verifyAuthToken();
 
-        await User.updateOne(
+        const result = await User.updateOne(
             { _id: userId },
             {
                 $push: { todos: { ...payload } }
             }
         )
 
-        return true;
+        if (result.modifiedCount > 0) {
+            revalidatePath("/dashboard");
+        }
+
+        return result.modifiedCount > 0;
     }
     catch (err: any) {
         console.log(err.message || "An unexpected error occurred");
@@ -63,17 +68,43 @@ export const updateToDo = async (payload: ToDoT) => {
                 }
                 // $(Position Operator): The "$" is used to refer to the "first matching element" in the todos array "that satisfies the condition you specify in the query".
             }
-        );
+        )
 
-        if (result.modifiedCount === 0) {
-            console.log("Document was not updated");
-            return false;
+        if (result.modifiedCount > 0) {
+            revalidatePath("/dashboard");
         }
 
-        return true;
+        return result.modifiedCount > 0;
     }
     catch (err: any) {
         console.log(err.message || "An unexpected error occurred");
-        return false
+        return false;
+    }
+}
+
+export const toggleComplete = async (payload: { _id?: string, isComplete?: boolean }) => {
+    await connectDB();
+
+    try {
+        const userId = await verifyAuthToken();
+
+        const result = await User.updateOne(
+            { _id: userId, "todos._id": payload._id },
+            {
+                $set: {
+                    "todos.$.isComplete": !payload.isComplete
+                }
+            }
+        )
+
+        if (result.modifiedCount > 0) {
+            revalidatePath("/dashboard");
+        }
+
+        return result.modifiedCount > 0;
+    }
+    catch (err: any) {
+        console.log(err.message || "An unexpected error occurred");
+        return false;
     }
 }

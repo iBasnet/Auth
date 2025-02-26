@@ -1,11 +1,11 @@
 import { getUserToDos } from '@/lib/actions/todo'
-import DashboardClient from './dashboard'
+import DashboardClient from './DashboardClient'
 
 export default async function page() {
 
-    const data = await getUserToDos();
+    const fetchedToDos = await getUserToDos();
 
     return (
-        <DashboardClient todos={data} />
+        <DashboardClient todos={fetchedToDos} />
     )
 }

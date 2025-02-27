@@ -15,6 +15,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { SquareDashedMousePointer } from "lucide-react";
 import { createSwapy } from 'swapy';
 import { type Swapy } from "swapy";
+import "./swapy.css";
 
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
 
@@ -54,19 +55,24 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
         monkMode ? swapyRef.current?.enable(false) : swapyRef.current?.enable(true);
     }
 
-    swapyRef.current?.onSwap((event) => {
-        console.log(event.newSlotItemMap.asArray);
-    });
-
     const [isDragging, setIsDragging] = useState(false);
+    const [draggedItemHeight, setDraggedItemHeight] = useState<number | undefined>(undefined);
+    const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+    // key = index of our mapped Divs
+    // [key]: HTMLDivElement = Hashmap [key: value]
+    // [key: string]: HTMLDivElement | null = Hashmap with type safety  [key: value] (value can be null/undefined if certain keys are omitted)
 
-    swapyRef.current?.onSwapStart((event) => {
-        setIsDragging(true);
+    swapyRef.current?.onSwap((event) => {
+        // console.log(event.newSlotItemMap.asArray);
+        const draggedElement = itemRefs.current[event.draggingItem];
+        if (draggedElement) {
+            setDraggedItemHeight(draggedElement.clientHeight / 16);
+        }
     });
 
-    swapyRef.current?.onSwapEnd((event) => {
-        setIsDragging(false);
-    });
+    swapyRef.current?.onSwapStart(() => setIsDragging(true));
+
+    swapyRef.current?.onSwapEnd(() => setIsDragging(false));
 
     return (
         <>
@@ -135,8 +141,14 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                                     (
                                         filteredToDos.length > 0 ? (
                                             filteredToDos.map((todo, index) => (
-                                                <div className="slot" data-swapy-slot={`${index}`}>
-                                                    <div className="item" data-swapy-item={`${index}`}
+                                                <div className="slot" data-swapy-slot={`${index}`}
+                                                    style={{ height: `${draggedItemHeight}rem` }}
+                                                >
+                                                    <div
+                                                        ref={(el) => {
+                                                            itemRefs.current[index] = el;
+                                                        }} // (Dynamic refs): "el" is the HTMLDivElement and "index" is the index of the mapped Divs
+                                                        className="item" data-swapy-item={`${index}`}
                                                         style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
                                                     >
                                                         <ToDoCard key={index} {...todo} />

@@ -1,0 +1,21 @@
+/* .slot {
+    height: max-content;
+} */
+
+.item[data-swapy-dragging] {
+    border: 2px solid #fff;
+    border-radius: .5rem;
+}
+
+.slot[data-swapy-highlighted] {
+    background: rgba(128, 128, 128, 0.128);
+    border-radius: .5rem;
+    outline: 2px solid grey;
+    outline-style: dashed;
+    height: max-content;
+}
+
+.item[style*="transition"],
+.item[style*="transform"] {
+    border-radius: .5rem !important;
+}

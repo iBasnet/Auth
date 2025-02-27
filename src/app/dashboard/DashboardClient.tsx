@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,10 @@ import ToDoCard from "./components/ToDoCard";
 import type { ToDoT } from "@/lib/types";
 import { toast } from "sonner";
 import DialogSetPush from "./components/DialogSetPush";
+import { Toggle } from "@/components/ui/toggle";
+import { SquareDashedMousePointer } from "lucide-react";
+import { createSwapy } from 'swapy';
+import { type Swapy } from "swapy";
 
 
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
@@ -31,6 +35,25 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
     const filteredToDos = todos?.filter((todo) =>
         todo.task.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    const swapyRef = useRef<Swapy>(null);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            swapyRef.current = createSwapy(containerRef.current, {
+                animation: 'dynamic' // or spring or none
+            })
+            swapyRef.current?.enable(false);
+        }
+    }, []);
+
+    const [monkMode, setMonkMode] = useState(false);
+
+    const handleMonkMode = () => {
+        setMonkMode(!monkMode);
+        monkMode ? swapyRef.current?.enable(false) : swapyRef.current?.enable(true);
+    }
 
     return (
         <>
@@ -66,8 +89,10 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                         <div className="flex items-center space-x-2">
 
-                            <Button variant="ghost"
-                                onClick={() => alert("let's get dragging")}>Monk Mode</Button>
+                            <Toggle onClick={handleMonkMode}>
+                                <SquareDashedMousePointer />
+                                <p>Monk Mode</p>
+                            </Toggle>
 
                             <DialogSetPush
                                 trigger={
@@ -91,12 +116,18 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                         </TabsList>
 
                         <TabsContent value="all">
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div ref={containerRef} className="swapy-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
                                     filteredToDos &&
                                     (
                                         filteredToDos.length > 0 ? (
-                                            filteredToDos.map((todo, index) => <ToDoCard key={index} {...todo} />)
+                                            filteredToDos.map((todo, index) => (
+                                                <div className="slot" data-swapy-slot={`x${index}`}>
+                                                    <div className="item" data-swapy-item={`y${index}`}>
+                                                        <ToDoCard key={index} {...todo} />
+                                                    </div>
+                                                </div>
+                                            ))
                                         ) : (
                                             <p className="text-center text-muted-foreground py-2">No tasks found.</p>
                                         )
@@ -148,7 +179,7 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                     </Tabs>
 
                 </div>
-            </div>
+            </div >
         </>
     )
 }

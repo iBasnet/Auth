@@ -16,7 +16,6 @@ import { SquareDashedMousePointer } from "lucide-react";
 import { createSwapy } from 'swapy';
 import { type Swapy } from "swapy";
 
-
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
 
     if (todos.error) {
@@ -54,6 +53,20 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
         setMonkMode(!monkMode);
         monkMode ? swapyRef.current?.enable(false) : swapyRef.current?.enable(true);
     }
+
+    swapyRef.current?.onSwap((event) => {
+        console.log(event.newSlotItemMap.asArray);
+    });
+
+    const [isDragging, setIsDragging] = useState(false);
+
+    swapyRef.current?.onSwapStart((event) => {
+        setIsDragging(true);
+    });
+
+    swapyRef.current?.onSwapEnd((event) => {
+        setIsDragging(false);
+    });
 
     return (
         <>
@@ -122,8 +135,10 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                                     (
                                         filteredToDos.length > 0 ? (
                                             filteredToDos.map((todo, index) => (
-                                                <div className="slot" data-swapy-slot={`x${index}`}>
-                                                    <div className="item" data-swapy-item={`y${index}`}>
+                                                <div className="slot" data-swapy-slot={`${index}`}>
+                                                    <div className="item" data-swapy-item={`${index}`}
+                                                        style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
+                                                    >
                                                         <ToDoCard key={index} {...todo} />
                                                     </div>
                                                 </div>

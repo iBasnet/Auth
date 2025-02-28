@@ -16,6 +16,9 @@ import { SquareDashedMousePointer } from "lucide-react";
 import { createSwapy } from 'swapy';
 import { type Swapy } from "swapy";
 import "./swapy.css";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+
 
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
 
@@ -29,12 +32,6 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
         })
         return;
     }
-
-    const [searchTerm, setSearchTerm] = useState("");
-
-    const filteredToDos = todos?.filter((todo) =>
-        todo.task.toLowerCase().includes(searchTerm.toLowerCase())
-    )
 
     const containerRef = useRef<HTMLDivElement>(null);
     const swapyRef = useRef<Swapy>(null);
@@ -57,22 +54,71 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
 
     const [isDragging, setIsDragging] = useState(false);
     const [draggedItemHeight, setDraggedItemHeight] = useState<number | undefined>(undefined);
-    const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-    // key = index of our mapped Divs
-    // [key]: HTMLDivElement = Hashmap [key: value]
-    // [key: string]: HTMLDivElement | null = Hashmap with type safety  [key: value] (value can be null/undefined if certain keys are omitted)
 
     swapyRef.current?.onSwap((event) => {
         // console.log(event.newSlotItemMap.asArray);
-        const draggedElement = itemRefs.current[event.draggingItem];
+
+        const newOrder: string[] = event.newSlotItemMap.asArray.map((object) => object.item);
+        console.log(newOrder);
+        localStorage.setItem("todoOrder", JSON.stringify(newOrder));
+        // setSwapOrder(newOrder);
+        const draggedElement = document.querySelector("[data-swapy-dragging]");
         if (draggedElement) {
             setDraggedItemHeight(draggedElement.clientHeight / 16);
         }
     });
 
-    swapyRef.current?.onSwapStart(() => setIsDragging(true));
+    swapyRef.current?.onSwapStart(() => {
+        setIsDragging(true);
+    });
 
-    swapyRef.current?.onSwapEnd(() => setIsDragging(false));
+    swapyRef.current?.onSwapEnd(() => {
+        setIsDragging(false);
+    });
+
+
+    const [sortedToDos, setSortedToDos] = useState([...todos]);
+    const [skeleton, setSkeleton] = useState(true);
+
+    useEffect(() => {
+        // Get the saved order from localStorage
+        const savedOrder = localStorage.getItem("todoOrder")
+            ? JSON.parse(localStorage.getItem("todoOrder")!)
+            : null;
+
+        if (savedOrder && savedOrder.length > 0) {
+            // Create a copy of todos to avoid mutation
+            const todosToSort = [...todos];
+
+            // Sort todos based on the order in savedOrder
+            todosToSort.sort((a, b) => {
+                // Find position of each todo's ID in the saved order
+                const indexA = savedOrder.indexOf(a._id);
+                const indexB = savedOrder.indexOf(b._id);
+
+                // Handle cases where IDs are not in saved order
+                if (indexA === -1 && indexB === -1) return 0; // Keep original order
+                if (indexA === -1) return 1; // Put items not in saved order at the end
+                if (indexB === -1) return -1;
+
+                // Sort by the position in the saved order
+                return indexA - indexB;
+            });
+
+            setSortedToDos(todosToSort);
+            setSkeleton(false);
+        } else {
+            // If no saved order, use original todos
+            setSortedToDos([...todos]);
+        }
+    }, [todos]); // Re-sort when todos change
+
+
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // const filteredToDos = reorderedToDos?.filter((todo) =>
+    //     todo.task.toLowerCase().includes(searchTerm.toLowerCase())
+    // )
 
     return (
         <>
@@ -137,33 +183,50 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                         <TabsContent value="all">
                             <div ref={containerRef} className="swapy-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    filteredToDos &&
-                                    (
-                                        filteredToDos.length > 0 ? (
-                                            filteredToDos.map((todo, index) => (
-                                                <div className="slot" data-swapy-slot={`${index}`}
-                                                    style={{ height: `${draggedItemHeight}rem` }}
-                                                >
-                                                    <div
-                                                        ref={(el) => {
-                                                            itemRefs.current[index] = el;
-                                                        }} // (Dynamic refs): "el" is the HTMLDivElement and "index" is the index of the mapped Divs
-                                                        className="item" data-swapy-item={`${index}`}
-                                                        style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
-                                                    >
-                                                        <ToDoCard key={index} {...todo} />
+                                    skeleton ? (
+                                        Array.from({ length: todos.length }).map((_, index) => (
+                                            <Card
+                                                key={index}
+                                                className="w-full h-36 rounded-md p-6 flex flex-col justify-evenly"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <Skeleton className="h-4 w-[40%] rounded-full" />
+                                                    <div className="flex gap-2">
+                                                        <Skeleton className="h-5 w-5 rounded-sm" />
+                                                        <Skeleton className="h-5 w-5 rounded-sm" />
                                                     </div>
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                                <Skeleton className="h-6 w-[80%] rounded-full mt-2 mb-4" />
+                                                <div className="flex items-center gap-2">
+                                                    <Skeleton className="h-5 w-16 rounded-full" />
+                                                    <Skeleton className="h-4 w-4 rounded-sm" />
+                                                </div>
+                                            </Card>
+                                        ))) :
+                                        (
+                                            sortedToDos && sortedToDos.length > 0 ? (
+
+                                                sortedToDos.map((todo, index) => (
+                                                    <div className="slot" data-swapy-slot={`${index}`}
+                                                        style={{ height: `${draggedItemHeight}rem` }}
+                                                    >
+                                                        <div
+                                                            className="item" data-swapy-item={`${todo._id}`}
+                                                            style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
+                                                        >
+                                                            <ToDoCard key={index} {...todo} />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                            )
                                         )
-                                    )
                                 }
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="pending">
+                        {/* <TabsContent value="pending">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
                                     filteredToDos &&
@@ -178,9 +241,9 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                                     )
                                 }
                             </div>
-                        </TabsContent>
+                        </TabsContent> */}
 
-                        <TabsContent value="completed">
+                        {/* <TabsContent value="completed">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
                                     filteredToDos &&
@@ -195,7 +258,7 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                                     )
                                 }
                             </div>
-                        </TabsContent>
+                        </TabsContent> */}
 
                         <TabsContent value="overdue">
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

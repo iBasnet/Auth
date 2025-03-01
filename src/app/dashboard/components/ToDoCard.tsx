@@ -9,11 +9,12 @@ import { formatDistanceToNow, isPast } from "date-fns";
 import DialogSetPush from "./DialogSetPush";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toggleComplete } from "@/lib/actions/todo";
-import { useOptimistic, useTransition } from "react";
+import { useEffect, useState, useOptimistic, useTransition } from "react";
 
 type ToDoCardProps = ToDoT;
 
 export default function ToDoCard({ dueBy, task, isComplete, category, _id, createdAt, updatedAt }: ToDoCardProps) {
+
     // Add useTransition hook
     const [isPending, startTransition] = useTransition();
 

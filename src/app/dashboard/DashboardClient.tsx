@@ -16,9 +16,8 @@ import { SquareDashedMousePointer } from "lucide-react";
 import { createSwapy } from 'swapy';
 import { type Swapy } from "swapy";
 import "./swapy.css";
-import { Suspense } from "react";
 import Loading from "../loading";
-
+import ToDoSkeleton from "./components/ToDoSkeleton";
 
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
 
@@ -81,7 +80,7 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
     });
 
 
-    const [sortedToDos, setSortedToDos] = useState<ToDoT[] | undefined>();
+    const [sortedToDos, setSortedToDos] = useState([...todos]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -191,24 +190,37 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                         <TabsContent value="all">
                             <div ref={containerRef} className="swapy-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    sortedToDos && sortedToDos.length > 0 ? (
-
-                                        sortedToDos.map((todo, index) => (
-                                            <div key={index}
-                                                className="slot" data-swapy-slot={`${index}`}
-                                                style={{ height: `${draggedItemHeight}rem` }}
-                                            >
+                                    isLoading ? (
+                                        Array(todos.length).fill(0).map((_, index) => (
+                                            <div className="slot" data-swapy-slot={index}>
                                                 <div
-                                                    className="item" data-swapy-item={`${todo._id}`}
-                                                    style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
-                                                >
-                                                    <ToDoCard key={index} {...todo} />
+                                                    className="item" data-swapy-item={index}>
+                                                    <ToDoSkeleton />
                                                 </div>
                                             </div>
                                         ))
-                                    ) : (
-                                        <p className="text-center text-muted-foreground py-2">No tasks found.</p>
-                                    )
+                                    ) :
+                                        (
+                                            (
+                                                sortedToDos && sortedToDos.length > 0 ? (
+
+                                                    sortedToDos.map((todo, index) => (
+                                                        <div className="slot" data-swapy-slot={`${index}`}
+                                                            style={{ height: `${draggedItemHeight}rem` }}
+                                                        >
+                                                            <div
+                                                                className="item" data-swapy-item={`${todo._id}`}
+                                                                style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
+                                                            >
+                                                                <ToDoCard key={index} {...todo} />
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                                )
+                                            )
+                                        )
                                 }
                             </div>
                         </TabsContent>

@@ -16,8 +16,8 @@ import { SquareDashedMousePointer } from "lucide-react";
 import { createSwapy } from 'swapy';
 import { type Swapy } from "swapy";
 import "./swapy.css";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
+import { Suspense } from "react";
+import Loading from "../loading";
 
 
 export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: string } }) {
@@ -42,6 +42,10 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                 animation: 'dynamic' // or spring or none
             })
             swapyRef.current?.enable(false);
+        }
+
+        return () => {
+            swapyRef.current?.destroy(); // Proper cleanup to avoid memory leaks
         }
     }, []);
 
@@ -77,8 +81,8 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
     });
 
 
-    const [sortedToDos, setSortedToDos] = useState([...todos]);
-    const [skeleton, setSkeleton] = useState(true);
+    const [sortedToDos, setSortedToDos] = useState<ToDoT[] | undefined>();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // Get the saved order from localStorage
@@ -106,13 +110,17 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
             });
 
             setSortedToDos(todosToSort);
-            setSkeleton(false);
         } else {
             // If no saved order, use original todos
             setSortedToDos([...todos]);
+
         }
+        setIsLoading(false);
     }, [todos]); // Re-sort when todos change
 
+    if (isLoading && sortedToDos?.length === 0) {
+        return <Loading />;
+    }
 
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -183,45 +191,24 @@ export default function DashboardClient({ todos }: { todos: ToDoT[] & { error?: 
                         <TabsContent value="all">
                             <div ref={containerRef} className="swapy-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                 {
-                                    skeleton ? (
-                                        Array.from({ length: todos.length }).map((_, index) => (
-                                            <Card
-                                                key={index}
-                                                className="w-full h-36 rounded-md p-6 flex flex-col justify-evenly"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <Skeleton className="h-4 w-[40%] rounded-full" />
-                                                    <div className="flex gap-2">
-                                                        <Skeleton className="h-5 w-5 rounded-sm" />
-                                                        <Skeleton className="h-5 w-5 rounded-sm" />
-                                                    </div>
-                                                </div>
-                                                <Skeleton className="h-6 w-[80%] rounded-full mt-2 mb-4" />
-                                                <div className="flex items-center gap-2">
-                                                    <Skeleton className="h-5 w-16 rounded-full" />
-                                                    <Skeleton className="h-4 w-4 rounded-sm" />
-                                                </div>
-                                            </Card>
-                                        ))) :
-                                        (
-                                            sortedToDos && sortedToDos.length > 0 ? (
+                                    sortedToDos && sortedToDos.length > 0 ? (
 
-                                                sortedToDos.map((todo, index) => (
-                                                    <div className="slot" data-swapy-slot={`${index}`}
-                                                        style={{ height: `${draggedItemHeight}rem` }}
-                                                    >
-                                                        <div
-                                                            className="item" data-swapy-item={`${todo._id}`}
-                                                            style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
-                                                        >
-                                                            <ToDoCard key={index} {...todo} />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="text-center text-muted-foreground py-2">No tasks found.</p>
-                                            )
-                                        )
+                                        sortedToDos.map((todo, index) => (
+                                            <div key={index}
+                                                className="slot" data-swapy-slot={`${index}`}
+                                                style={{ height: `${draggedItemHeight}rem` }}
+                                            >
+                                                <div
+                                                    className="item" data-swapy-item={`${todo._id}`}
+                                                    style={monkMode ? isDragging ? { cursor: "grabbing" } : { cursor: "grab" } : {}}
+                                                >
+                                                    <ToDoCard key={index} {...todo} />
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-muted-foreground py-2">No tasks found.</p>
+                                    )
                                 }
                             </div>
                         </TabsContent>
